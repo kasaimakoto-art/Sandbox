@@ -1,0 +1,2 @@
+add_subdirectory(entrypoint)
+add_subdirectory(settings)
