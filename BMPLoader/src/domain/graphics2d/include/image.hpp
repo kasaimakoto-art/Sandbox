@@ -10,6 +10,7 @@ namespace kaf::domain::graphics2d{
 struct Pixel;
 struct PixelBuffer;
     struct Image{
+        explicit Image() = default;
         explicit Image(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height): 
             pixelBuffer_(std::move(buffer)), width_(width), height_(height){}
         bool isValid() const;
@@ -26,7 +27,8 @@ struct PixelBuffer;
 
     bool getPixel(const Image& image, Pixel& pixel, unsigned int width, unsigned int height);
     bool setPixel(Image& image, const Pixel& pixel, unsigned int width, unsigned int height);
-    std::unique_ptr<Image> createImage(const std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height);
+    std::unique_ptr<Image> createImage(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height);
+    std::unique_ptr<Image> copyImage(const PixelBuffer& buffer, size_t width, size_t height);
 }
 
 #endif
