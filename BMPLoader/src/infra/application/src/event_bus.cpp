@@ -1,3 +1,7 @@
+/**
+ * @file event_bus.cpp
+ * @brief EventBus の実装。
+ */
 #include "../include/event_bus.hpp"
 
 namespace kaf::infra::application{

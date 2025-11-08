@@ -1,3 +1,7 @@
+/**
+ * @file bmp.cpp
+ * @brief BMP 読み書きクラスの実装（進行中）。
+ */
 #include "../include/bmp.hpp"
 
 #include <fstream>
@@ -86,6 +90,7 @@ namespace kaf::infra::codecs{
 
         return false;
     }
+    
     bool BMP::saveImage(const std::string& outputFilePath)const {
         return false;
     }
@@ -99,6 +104,7 @@ namespace kaf::infra::codecs{
         }
         return true;
     }
+
     bool BMP::readBitmapInfoHeader(std::ifstream& infStream, std::uint16_t& bitsPerPixel){
         char infoHeader[40];
         infStream.read(infoHeader, INFOHEADER_SIZE);
@@ -119,6 +125,7 @@ namespace kaf::infra::codecs{
         height_ = static_cast<size_t>(height);
         return true;
     }
+
     bool BMP::readBitmapCollorBuffer(std::ifstream& infStream, const size_t& bytePerPixel, size_t lineNumber){
         if(!pixelBuffer_->isValid() || 
             lineNumber >= height_ || 

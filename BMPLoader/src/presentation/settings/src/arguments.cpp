@@ -1,3 +1,7 @@
+/**
+ * @file arguments.cpp
+ * @brief Arguments の実装。
+ */
 #include <iostream>
 #include "arguments.hpp"
 

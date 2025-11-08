@@ -1,3 +1,7 @@
+/**
+ * @file image.cpp
+ * @brief Image と関連ユーティリティの実装。
+ */
 #include "../include/image.hpp"
 #include "../include/pixel.hpp"
 #include "../include/pixel_buffer.hpp"

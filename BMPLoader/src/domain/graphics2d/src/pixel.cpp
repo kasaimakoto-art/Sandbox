@@ -1,3 +1,7 @@
+/**
+ * @file pixel.cpp
+ * @brief Pixel の実装。
+ */
 #include "../include/pixel.hpp"
 
 namespace kaf::domain::graphics2d{
