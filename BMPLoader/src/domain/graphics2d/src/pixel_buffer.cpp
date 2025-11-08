@@ -1,4 +1,7 @@
 #include "../include/pixel_buffer.hpp"
+#include "../include/pixel.hpp"
+
+#include <algorithm>
 
 namespace kaf::domain::graphics2d{
     PixelBuffer::PixelBuffer(const size_t size, const Pixel& pixel) {

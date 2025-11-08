@@ -53,13 +53,13 @@ namespace kaf::domain::graphics2d{
         return setPixel(*image.pixelBuffer_, pixel, height * image.width_ + width);
     }
 
-    std::unique_ptr<Image> createImage(const std::unique_ptr<PixelBuffer>&& buffer, const size_t width, const size_t height) {
+    std::unique_ptr<Image> createImage(std::unique_ptr<PixelBuffer>&& buffer, const size_t width, const size_t height) {
         auto expectedSize = mul_size(width, height);
         if(!expectedSize.has_value()){
-            return false;
+            return nullptr;
         }
         if(buffer->size_ < expectedSize.value()){
-            return false;
+            return nullptr;
         }
         return std::make_unique<Image>(std::move(buffer), height, width);
     }
