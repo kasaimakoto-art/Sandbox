@@ -8,12 +8,14 @@
 
 namespace kaf::domain::graphics2d{
 struct Pixel;
+struct PixelBuffer;
     struct Image{
-        explicit Image(std::unique_ptr<Pixel[]> pixels, size_t width, size_t height): 
-            pixels_(std::move(pixels)), width_(width), height_(height){}
+        explicit Image(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height): 
+            pixelBuffer_(std::move(buffer)), width_(width), height_(height){}
+        bool isValid() const;
         size_t width_{};
         size_t height_{};
-        std::unique_ptr<Pixel[]> pixels_ = nullptr;
+        std::unique_ptr<PixelBuffer> pixelBuffer_ = nullptr;
     };
 
     inline std::optional<size_t> mul_size(size_t width, size_t height) {
@@ -24,8 +26,7 @@ struct Pixel;
 
     bool getPixel(const Image& image, Pixel& pixel, unsigned int width, unsigned int height);
     bool setPixel(Image& image, const Pixel& pixel, unsigned int width, unsigned int height);
-    std::unique_ptr<Image> createImage(std::unique_ptr<Pixel[]>& data, size_t bufferSize, size_t width, size_t height);
-    std::unique_ptr<Image> createImage(std::vector<Pixel>& data, size_t bufferSize, size_t width, size_t height);
+    std::unique_ptr<Image> createImage(const std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height);
 }
 
 #endif
