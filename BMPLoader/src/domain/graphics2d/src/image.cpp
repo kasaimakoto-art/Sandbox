@@ -2,6 +2,11 @@
 #include "../include/pixel.hpp"
 #include "../include/pixel_buffer.hpp"
 
+#include <optional>
+#include <limits>
+#include <memory>
+#include <algorithm>
+
 namespace kaf::domain::graphics2d{
 
     bool Image::isValid() const {

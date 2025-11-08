@@ -21,8 +21,8 @@ namespace kaf::infra::codecs{
     private:
 
         bool readBitmapFileHeader(std::ifstream& infStream)const;
-        bool readBitmapInfoHeader(std::ifstream& infStream);
-        bool readBitmapCollorBuffer(std::ifstream& infStream, int lineNumber);
+        bool readBitmapInfoHeader(std::ifstream& infStream, std::uint16_t& bitsPerPixel);
+        bool readBitmapCollorBuffer(std::ifstream& infStream, const size_t& bytePerPixel, size_t lineNumber);
 
     };
 

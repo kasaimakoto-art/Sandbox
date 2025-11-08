@@ -55,10 +55,33 @@ namespace kaf::infra::codecs{
             inputFile.close();
             return false;
         }
-        if(!readBitmapInfoHeader(inputFile)){
+        std::uint16_t bitsPerPixel = 0;
+        if(!readBitmapInfoHeader(inputFile, bitsPerPixel)){
             inputFile.close();
             return false;
         }
+        auto size = domain::graphics2d::mul_size(width_, height_);
+        if(!size.has_value()){
+            return false;
+        }
+        std::unique_ptr<domain::graphics2d::PixelBuffer> pixelBuffer = std::make_unique<domain::graphics2d::PixelBuffer>(size.value());
+        if(!pixelBuffer->isValid()){
+            return false;
+        }
+        if(pixelBuffer_->size_ != size.value()){
+            return false;
+        }
+        pixelBuffer_ = std::move(pixelBuffer);
+        const size_t byteParPixel = bitsPerPixel / 8;
+        for(size_t line = 0; line < height_; ++line){
+            if(!readBitmapCollorBuffer(inputFile, byteParPixel, line)){
+                pixelBuffer_ = nullptr;
+                inputFile.close();
+                break;
+            }
+        }
+        inputFile.close();
+
 
 
         return false;
@@ -76,7 +99,7 @@ namespace kaf::infra::codecs{
         }
         return true;
     }
-    bool BMP::readBitmapInfoHeader(std::ifstream& infStream){
+    bool BMP::readBitmapInfoHeader(std::ifstream& infStream, std::uint16_t& bitsPerPixel){
         char infoHeader[40];
         infStream.read(infoHeader, INFOHEADER_SIZE);
         std::uint32_t width = *reinterpret_cast<std::uint32_t*>(&infoHeader[4]);
@@ -96,32 +119,26 @@ namespace kaf::infra::codecs{
         height_ = static_cast<size_t>(height);
         return true;
     }
-    bool BMP::readBitmapCollorBuffer(std::ifstream& infStream, int lineNumber){
-        auto size = domain::graphics2d::mul_size(width_, height_);
-        if(!size.has_value()){
+    bool BMP::readBitmapCollorBuffer(std::ifstream& infStream, const size_t& bytePerPixel, size_t lineNumber){
+        if(!pixelBuffer_->isValid() || 
+            lineNumber >= height_ || 
+            bytePerPixel < 3 || bytePerPixel >4 || 
+            width_ * bytePerPixel+1 > pixelBuffer_->size_){
             return false;
         }
-        std::unique_ptr<domain::graphics2d::PixelBuffer> pixelBuffer = std::make_unique<domain::graphics2d::PixelBuffer>(size.value());
-        if(!pixelBuffer->isValid()){
-            return false;
+        for(size_t col = (height_ - lineNumber-1) * width_; col < width_; ++col){
+            char bgr[4] = {0};
+            infStream.read(bgr, bytePerPixel);
+            domain::graphics2d::Pixel pixel;
+            pixel.b_ = static_cast<float>(static_cast<unsigned char>(bgr[0])) / 255.0f;
+            pixel.g_ = static_cast<float>(static_cast<unsigned char>(bgr[1])) / 255.0f;
+            pixel.r_ = static_cast<float>(static_cast<unsigned char>(bgr[2])) / 255.0f;
+            size_t pos = lineNumber * width_ + col;
+            domain::graphics2d::setPixel(*pixelBuffer_, pixel, pos);
         }
-        for(size_t row = 0; row < height_; ++row){
-            for(size_t col = 0; col < width_; ++col){
-                char bgr[3];
-                infStream.read(bgr, 3);
-                domain::graphics2d::Pixel pixel;
-                pixel.b_ = static_cast<float>(static_cast<unsigned char>(bgr[0])) / 255.0f;
-                pixel.g_ = static_cast<float>(static_cast<unsigned char>(bgr[1])) / 255.0f;
-                pixel.r_ = static_cast<float>(static_cast<unsigned char>(bgr[2])) / 255.0f;
-                size_t pos = (height_ - 1 - row) * width_ + col;
-                domain::graphics2d::setPixel(*pixelBuffer, pixel, pos);
-            }
-            // Skip padding bytes
-            size_t rowSize = (width_ * 3 + 3) & (~3);
-            size_t paddingSize = rowSize - (width_ * 3);
-            infStream.ignore(paddingSize);
-        }
-        pixelBuffer_ =  std::move(pixelBuffer);
-        return true;
+        // Skip padding bytes
+        size_t rowSize = (width_ * 3 + 3) & (~3);
+        size_t paddingSize = rowSize - (width_ * 3);
+        infStream.ignore(paddingSize);
     }
 }
