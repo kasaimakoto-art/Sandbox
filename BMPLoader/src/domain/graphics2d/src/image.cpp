@@ -1,6 +1,15 @@
+/**
+ * @file image.cpp
+ * @brief Image と関連ユーティリティの実装。
+ */
 #include "../include/image.hpp"
 #include "../include/pixel.hpp"
 #include "../include/pixel_buffer.hpp"
+
+#include <optional>
+#include <limits>
+#include <memory>
+#include <algorithm>
 
 namespace kaf::domain::graphics2d{
 
@@ -62,6 +71,22 @@ namespace kaf::domain::graphics2d{
             return nullptr;
         }
         return std::make_unique<Image>(std::move(buffer), height, width);
+    }
+
+    std::unique_ptr<Image> copyImage(const PixelBuffer& buffer, size_t width, size_t height) {
+        auto expectedSize = mul_size(width, height);
+        if(!expectedSize.has_value()){
+            return nullptr;
+        }
+        if(buffer.size_ != expectedSize.value()){
+            return nullptr;
+        }
+        auto newBuffer = std::make_unique<PixelBuffer>(expectedSize.value());
+        if(!newBuffer || !newBuffer->isValid()){
+            return nullptr;
+        }
+        std::copy(buffer.pixels_.get(), buffer.pixels_.get() + expectedSize.value(), newBuffer->pixels_.get());
+        return std::make_unique<Image>(std::move(newBuffer), width, height);
     }
 
 }

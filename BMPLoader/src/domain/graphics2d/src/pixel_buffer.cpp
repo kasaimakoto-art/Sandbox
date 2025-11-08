@@ -1,3 +1,7 @@
+/**
+ * @file pixel_buffer.cpp
+ * @brief PixelBuffer と関連関数の実装。
+ */
 #include "../include/pixel_buffer.hpp"
 #include "../include/pixel.hpp"
 
