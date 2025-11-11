@@ -28,6 +28,8 @@ namespace kaf::infra::codecs{
         /** @brief DIB ヘッダ（BITMAPINFOHEADER）のサイズ[バイト]。 */
         const size_t INFOHEADER_SIZE = 40;
 
+        const unsigned int BI_RGB = 0;
+
         /**
          * @brief 既定コンストラクタ。空の画像で初期化します。
          */
@@ -70,7 +72,7 @@ namespace kaf::infra::codecs{
          * @retval true 保存成功
          * @retval false 失敗（画像未生成、書き込み失敗 等）
          */
-        bool saveImage(const std::string& outputFilePath)const;
+        bool saveImage(const std::string& outputFilePath, const size_t bitPerPixel = 32)const;
 
 
     private:
@@ -100,6 +102,10 @@ namespace kaf::infra::codecs{
          * @retval false 失敗（サイズ不一致、読み取りエラー 等）
          */
         bool readBitmapCollorBuffer(std::ifstream& infStream, const size_t& bytePerPixel, size_t lineNumber);
+
+        bool writeBitmapFileHeader(std::ofstream& outfStream, const size_t& bytePerPixel)const;
+        bool writeBitmapInfoHeader(std::ofstream& outfStream, const size_t& bytePerPixel)const;
+        bool writeBitmapCollorBuffer(std::ofstream& outfStream, const size_t& bytePerPixel, size_t lineNumber)const;
 
     };
 
