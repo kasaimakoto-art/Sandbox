@@ -12,6 +12,81 @@
 #include <algorithm>
 
 namespace kaf::domain::graphics2d{
+    Image::Image()
+    : pixelBuffer_(nullptr), width_(0), height_(0){}
+
+    Image::Image(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height)
+        : pixelBuffer_(std::move(buffer)), width_(width), height_(height){}
+
+    Image::Image(const size_t width, const size_t height, const Pixel& pixel){
+        std::optional<size_t> size = domain::graphics2d::mul_size(width, height);
+        if(!size.has_value()) return;
+        std::unique_ptr<domain::graphics2d::PixelBuffer> tmpBuffer = std::make_unique<PixelBuffer>(size.value(), pixel);
+        if(tmpBuffer == nullptr){
+            return;
+        }
+        setPixelBuffer(std::move(tmpBuffer));
+        setHeight(height);
+        setWidth(width);
+    }
+
+    Image::~Image(){
+        width_ = 0;
+        height_ = 0;
+        pixelBuffer_ = nullptr;
+    }
+    Image::Image(const Image& other){
+        if(other.getPixelBuffer() != nullptr){
+            auto otherBuffer = other.getPixelBuffer();
+            std::unique_ptr<PixelBuffer> tmpBuffer = std::make_unique<PixelBuffer>(otherBuffer->size_);
+            if(tmpBuffer == nullptr) return;
+            bool result = domain::graphics2d::setPixels(*tmpBuffer, otherBuffer->pixels_, otherBuffer->size_, 0);
+            if(!result){
+                tmpBuffer = nullptr;
+                return;
+            }
+            setPixelBuffer(std::move(tmpBuffer));
+        } else {
+            setPixelBuffer(nullptr);
+        }
+        setHeight(other.getHeight());
+        setWidth(other.getWidth());
+    }
+    Image& Image::operator=(const Image& other){
+        if(this == &other){
+            return *this;
+        }
+        if(other.getPixelBuffer() != nullptr){
+            auto otherBuffer = other.getPixelBuffer();
+            std::unique_ptr<domain::graphics2d::PixelBuffer> tmpBuffer = std::make_unique<domain::graphics2d::PixelBuffer>(otherBuffer->size_);
+            if(tmpBuffer == nullptr) return *this;
+            bool result = domain::graphics2d::setPixels(*tmpBuffer, otherBuffer->pixels_, otherBuffer->size_, 0);
+            if(!result){
+                tmpBuffer = nullptr;
+                return *this;
+            }
+            setPixelBuffer(std::move(tmpBuffer));
+        } else {
+            setPixelBuffer(nullptr);
+        }
+        setHeight(other.getHeight());
+        setWidth(other.getWidth());
+        return *this;
+    }
+    Image::Image(Image&& other){
+        setHeight(other.getHeight());
+        setWidth(other.getWidth());
+        setPixelBuffer(other.passPixelBuffer());
+    }
+    Image& Image::operator=(Image&& other){
+        if(this == &other){
+            return *this;
+        }
+        setHeight(other.getHeight());
+        setWidth(other.getWidth());
+        setPixelBuffer(other.passPixelBuffer());
+        return *this;
+    }
 
     bool Image::isValid() const {
         if(!pixelBuffer_){
@@ -30,36 +105,37 @@ namespace kaf::domain::graphics2d{
         return true;
     }
 
-    bool getPixel(const Image& image, Pixel& pixel, size_t width, size_t height){
-        if(!image.pixelBuffer_){
-            return false;
+    Pixel* Image::getPixel(size_t width, size_t height){
+        if(!getPixelBuffer()){
+            return nullptr;
         }
-        if(!image.isValid()){
-            return false;
+        if(!isValid()){
+            return nullptr;
         }
-        if(image.width_ < width){
-            return false;
+        if(getWidth() < width){
+            return nullptr;
         }
-        if(image.height_ < height){
-            return false;
+        if(getHeight() < height){
+            return nullptr;
         }
-        return getPixel(*image.pixelBuffer_, pixel, height * image.width_ + width);
+        return &(getPixelBuffer()->pixels_[height * width_ + width]);
     }
 
-    bool setPixel(Image& image, const Pixel& pixel, size_t width, size_t height){
-        if(!image.pixelBuffer_){
+    bool Image::setPixel(size_t width, size_t height, const Pixel& pixel ){
+        if(!getPixelBuffer()){
             return false;
         }
-        if(!image.isValid()){
+        if(!isValid()){
             return false;
         }
-        if(image.width_ < width){
+        if(getWidth() < width){
             return false;
         }
-        if(image.height_ < height){
+        if(getHeight() < height){
             return false;
         }
-        return setPixel(*image.pixelBuffer_, pixel, height * image.width_ + width);
+        getPixelBuffer()->pixels_[height * width_ + width] = pixel;
+        return true;
     }
 
     std::unique_ptr<Image> createImage(std::unique_ptr<PixelBuffer>&& buffer, const size_t width, const size_t height) {
@@ -70,7 +146,7 @@ namespace kaf::domain::graphics2d{
         if(buffer->size_ < expectedSize.value()){
             return nullptr;
         }
-        return std::make_unique<Image>(std::move(buffer), height, width);
+        return std::make_unique<Image>(std::move(buffer), width, height);
     }
 
     std::unique_ptr<Image> copyImage(const PixelBuffer& buffer, size_t width, size_t height) {
@@ -86,6 +162,22 @@ namespace kaf::domain::graphics2d{
             return nullptr;
         }
         std::copy(buffer.pixels_.get(), buffer.pixels_.get() + expectedSize.value(), newBuffer->pixels_.get());
+        return std::make_unique<Image>(std::move(newBuffer), width, height);
+    }
+
+    std::unique_ptr<Image> createImage(const std::vector<Pixel>& pixels, size_t width, size_t height) {
+        auto expectedSize = mul_size(width, height);
+        if(!expectedSize.has_value()){
+            return nullptr;
+        }
+        if(pixels.size() != expectedSize.value()){
+            return nullptr;
+        }
+        auto newBuffer = std::make_unique<PixelBuffer>(expectedSize.value());
+        if(!newBuffer || !newBuffer->isValid()){
+            return nullptr;
+        }
+        std::copy(pixels.begin(), pixels.end(), newBuffer->pixels_.get());
         return std::make_unique<Image>(std::move(newBuffer), width, height);
     }
 

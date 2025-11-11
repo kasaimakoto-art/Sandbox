@@ -8,28 +8,53 @@
 #include <optional>
 #include <vector>
 #include <memory>
+#include <limits>
+#include <algorithm>
+
+#include "pixel.hpp"
+#include "pixel_buffer.hpp"
 
 
 namespace kaf::domain::graphics2d{
-struct Pixel;
-struct PixelBuffer;
     /**
-     * @struct Image
+     * @class Image
      * @brief ピクセルバッファを所有する 2D 画像。
      */
-    struct Image{
+    class Image{
+    public:
         /** @brief 既定コンストラクタ。 */
-        explicit Image() = default;
+        Image();
         /**
          * @brief 画像を生成します。
          * @param buffer ピクセル配列（所有権を移動）
          * @param width 幅[px]
          * @param height 高さ[px]
          */
-        explicit Image(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height): 
-            pixelBuffer_(std::move(buffer)), width_(width), height_(height){}
+        Image(std::unique_ptr<PixelBuffer>&& buffer, size_t width, size_t height);
+
+        Image(const size_t width, const size_t height, const Pixel& pixel = Pixel(1.0f, 1.0f, 1.0f));
+
+        ~Image();
+        Image(const Image& other);
+        Image& operator=(const Image& other);
+        Image(Image&& other);
+        Image& operator=(Image&& other);
+
         /** @brief 画像・バッファが妥当かを検証します。 */
         bool isValid() const;
+
+        size_t getWidth() const { return width_; }
+        void setWidth(size_t width) { width_ = width; }
+        size_t getHeight() const { return height_; }
+        void setHeight(size_t height) { height_ = height; }
+        PixelBuffer* getPixelBuffer() const { return pixelBuffer_.get(); }
+        std::unique_ptr<PixelBuffer> passPixelBuffer() { return std::move(pixelBuffer_); }
+        void setPixelBuffer(std::unique_ptr<PixelBuffer>&& buffer) { pixelBuffer_ =  std::move(buffer); }
+
+        Pixel* getPixel(const size_t width, const size_t height);
+        bool setPixel(const size_t width, const size_t height, const Pixel& pixel);
+
+    private:
         /** 幅[px] */
         size_t width_{};
         /** 高さ[px] */
@@ -84,6 +109,17 @@ struct PixelBuffer;
      * @return 生成された画像（失敗時 nullptr）
      */
     std::unique_ptr<Image> copyImage(const PixelBuffer& buffer, size_t width, size_t height);
+
+    /**
+     * @brief ピクセルバッファから画像を生成します。
+     * @param pixels 読み取り専用のピクセル配列
+     * @param width 幅[px]
+     * @param height 高さ[px]
+     * @return 生成された画像（失敗時 nullptr）
+     */
+    std::unique_ptr<Image> createImage(const std::vector<Pixel>& pixels, size_t width, size_t height);
+
+    bool createNewImage(const size_t width, const size_t height, const kaf::domain::graphics2d::Pixel& color);
 }
 
 #endif

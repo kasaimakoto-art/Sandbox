@@ -13,6 +13,7 @@ set_target_properties(
 target_link_libraries(
     app.entrypoint
     PRIVATE
+    infra.codecs
     presentation.settings
 )
 

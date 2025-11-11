@@ -38,7 +38,13 @@ namespace kaf::infra::codecs{
          * @param width 画像の幅[px]
          * @param height 画像の高さ[px]
          */
-        BMP(size_t width, size_t height);
+        BMP(const size_t width, const size_t height, const kaf::domain::graphics2d::Pixel& pixel = kaf::domain::graphics2d::Pixel(1.0f,1.0f,1.0f));
+
+        ~BMP();
+        BMP(const BMP& other);
+        BMP& operator=(const BMP& other);
+        BMP(BMP&& other);
+        BMP& operator=(BMP&& other);
 
         /**
          * @brief 既存の画素バッファを用いて画像を設定します。
@@ -65,6 +71,8 @@ namespace kaf::infra::codecs{
          * @retval false 失敗（画像未生成、書き込み失敗 等）
          */
         bool saveImage(const std::string& outputFilePath)const;
+
+
     private:
         /**
          * @brief BITMAPFILEHEADER（先頭14バイト）を読み取り検証します。
