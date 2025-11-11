@@ -51,7 +51,7 @@ namespace kaf::domain::graphics2d{
         std::unique_ptr<PixelBuffer> passPixelBuffer() { return std::move(pixelBuffer_); }
         void setPixelBuffer(std::unique_ptr<PixelBuffer>&& buffer) { pixelBuffer_ =  std::move(buffer); }
 
-        Pixel* getPixel(const size_t width, const size_t height);
+        Pixel* getPixel(const size_t width, const size_t height)const;
         bool setPixel(const size_t width, const size_t height, const Pixel& pixel);
 
     private:

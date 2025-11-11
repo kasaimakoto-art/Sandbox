@@ -12,7 +12,15 @@ void Arguments::showArguments(int argc, char* argv[]){
 }
 
 bool Arguments::recieveArgument(int argc, char* argv[]){
-    return reciveLoadBmpPath(argc, argv);
+    bool result = reciveLoadBmpPath(argc, argv);
+    if(!result){
+        std::cout<<"No Load BMP Path Specified." << std::endl;
+    }
+    result = reciveSaveBmpPath(argc, argv) || result;
+    if(!result){
+        std::cout<<"No Save BMP Path Specified." << std::endl;
+    }
+    return result;
 }
 
 bool Arguments::reciveLoadBmpPath(int argc, char* argv[]){
@@ -22,7 +30,22 @@ bool Arguments::reciveLoadBmpPath(int argc, char* argv[]){
             std::cout<<"Exist Load Flags." << std::endl;
             std::filesystem::path filePath(argv[idx+1]);
             if(std::filesystem::exists(filePath)){
-                m_loadBmpPath = filePath.generic_string();
+                loadBmpPath_ = filePath.generic_string();
+                std::cout<<"Exist file: " << filePath.generic_string() << std::endl;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+bool Arguments::reciveSaveBmpPath(int argc, char* argv[]){
+    for(int idx =0; idx < argc; idx++){
+        std::string argString = argv[idx];
+        if((argString == "--save" || argString == "--s") && (idx +1 < argc)){
+            std::cout<<"Exist Load Flags." << std::endl;
+            std::filesystem::path filePath(argv[idx+1]);
+            if(!std::filesystem::exists(filePath) && (!loadBmpPath_.empty() && !loadBmpPath_._Equal(filePath.generic_string()))){
+                saveBmpPath_ = filePath.generic_string();
                 std::cout<<"Exist file: " << filePath.generic_string() << std::endl;
                 return true;
             }

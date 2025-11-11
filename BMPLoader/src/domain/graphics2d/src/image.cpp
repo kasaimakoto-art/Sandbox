@@ -105,7 +105,7 @@ namespace kaf::domain::graphics2d{
         return true;
     }
 
-    Pixel* Image::getPixel(size_t width, size_t height){
+    Pixel* Image::getPixel(size_t width, size_t height)const {
         if(!getPixelBuffer()){
             return nullptr;
         }
