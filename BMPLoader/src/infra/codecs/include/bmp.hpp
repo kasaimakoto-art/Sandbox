@@ -72,7 +72,7 @@ namespace kaf::infra::codecs{
          * @retval true 保存成功
          * @retval false 失敗（画像未生成、書き込み失敗 等）
          */
-        bool saveImage(const std::string& outputFilePath, const size_t bytePerPixel = 32)const;
+        bool saveImage(const std::string& outputFilePath, const size_t bitPerPixel = 32)const;
 
 
     private:

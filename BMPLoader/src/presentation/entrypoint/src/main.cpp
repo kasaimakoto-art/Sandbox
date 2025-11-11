@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
         std::cout << "No BMP path specified." << std::endl;
     } else {
         std::cout << "BMP Path: " << args.getSaveBmpPath() << std::endl;
-        if(bmpImage.saveImage(args.getSaveBmpPath(), 24/8)){
+        if(bmpImage.saveImage(args.getSaveBmpPath(), 24)){
             std::cout << "BMP image saved successfully." << std::endl;
             std::cout << "Image Size: " << bmpImage.getWidth() << " x " << bmpImage.getHeight() << std::endl;
         } else {

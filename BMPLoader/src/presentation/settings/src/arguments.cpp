@@ -44,7 +44,7 @@ bool Arguments::reciveSaveBmpPath(int argc, char* argv[]){
         if((argString == "--save" || argString == "--s") && (idx +1 < argc)){
             std::cout<<"Exist Load Flags." << std::endl;
             std::filesystem::path filePath(argv[idx+1]);
-            if(!std::filesystem::exists(filePath) && (!loadBmpPath_.empty() && !loadBmpPath_._Equal(filePath.generic_string()))){
+            if(!std::filesystem::exists(filePath) && (!loadBmpPath_.empty() && !(filePath == loadBmpPath_))){
                 saveBmpPath_ = filePath.generic_string();
                 std::cout<<"Exist file: " << filePath.generic_string() << std::endl;
                 return true;

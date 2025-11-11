@@ -162,11 +162,12 @@ namespace kaf::infra::codecs{
         return true;
     }
     
-    bool BMP::saveImage(const std::string& outputFilePath, const size_t bytePerPixel)const {
+    bool BMP::saveImage(const std::string& outputFilePath, const size_t bitPerPixel)const {
         if(getPixelBuffer() == nullptr || !getPixelBuffer()->isValid()){
             fprintf(stderr, "Invalid pixel buffer\n");
             return false;
         }
+        const size_t bytePerPixel = bitPerPixel / 8;
         std::filesystem::path filePath(outputFilePath);
         if(std::filesystem::exists(filePath)) {return false;}
         std::ofstream outputFile(filePath.c_str(), std::ios::binary);
@@ -266,8 +267,7 @@ namespace kaf::infra::codecs{
             outfStream.write(bgr, bytePerPixel);
         }
         // Skip padding bytes
-        size_t rowSize = (getWidth() * bytePerPixel + 3) & (~3);
-        size_t paddingSize = rowSize - (getWidth() * bytePerPixel);
+        size_t paddingSize =floor((bytePerPixel * getWidth() + 3)/4) * 4 - (bytePerPixel * getWidth());
         if(paddingSize == 0) return true;
         char* paddingData = new char[paddingSize];
         fprintf(stderr, "Writing %zu padding bytes\n", paddingSize);
@@ -323,8 +323,8 @@ namespace kaf::infra::codecs{
             domain::graphics2d::setPixel(*getPixelBuffer(), pixel, pos);
         }
         // Skip padding bytes
-        size_t rowSize = (getWidth() * 3 + 3) & (~3);
-        size_t paddingSize = rowSize - (getWidth() * bytePerPixel);
+        size_t paddingSize =floor((bytePerPixel * getWidth() + 3)/4) * 4 - (bytePerPixel * getWidth());
+        if(paddingSize == 0) return true;
         fprintf(stderr, "Skipping %zu padding bytes\n", paddingSize);
         infStream.ignore(paddingSize);
             return true;
